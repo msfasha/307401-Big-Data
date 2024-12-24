@@ -12,7 +12,7 @@
 #### **Key Features of Azure Databricks**
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks.png" alt="KMeans Algorithm" width="600"/>
+    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks1.png" alt="KMeans Algorithm" width="600"/>
 </div>
 
 a. **Unified Analytics Platform**:  
@@ -53,6 +53,47 @@ e. **Interactive Visualizations**:
 Azure Databricks provides a robust platform for modern analytics and AI workloads, empowering organizations to unlock the full potential of their data while leveraging the power and reliability of Microsoft Azure.
 
 ---
+
+### Databricks in Microsoft Azure
+
+<div style="text-align: center;">
+    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks2.png" alt="KMeans Algorithm" width="600"/>
+</div>
+
+**General Azure Items:**
+
+* **New:** Creates new resources like virtual machines, storage accounts, etc.
+* **Workspace:** A central hub for managing Azure resources and services.
+* **Recents:** Displays recently accessed resources and activities.
+* **Catalog:** A repository for data assets, including datasets, schemas, and dataflows.
+* **Workflows:** Orchestrates and automates tasks and workflows using Azure Logic Apps.
+* **Compute:** Provides various compute options like virtual machines, Azure Functions, etc.
+
+**SQL-Related Items:**
+
+* **SQL Editor:** A tool for writing and executing SQL queries.
+* **Queries:** Stores and manages previously executed SQL queries.
+* **Dashboards:** Visualizes data using charts, graphs, and other interactive elements.
+* **Genie:** An intelligent query assistant that provides suggestions and optimizations.
+* **Alerts:** Sets up notifications for specific events or conditions.
+* **Query History:** Tracks the history of executed SQL queries.
+* **SQL Warehouses:** Manages dedicated SQL pools for high-performance analytics.
+
+**Data Engineering Items:**
+
+* **Job Runs:** Displays the history and status of data engineering jobs.
+* **Data Ingestion:** Facilitates the process of importing data into Azure.
+* **Delta Live Tables:** Enables the creation and management of data pipelines with built-in data quality and lineage tracking.
+
+**Machine Learning Items:**
+
+* **Experiments:** Tracks and manages machine learning experiments.
+* **Features:** Manages and transforms features for machine learning models.
+* **Models:** Stores and deploys trained machine learning models.
+* **Marketplace:** Offers a variety of third-party solutions and services.
+* **Partner Connect:** Connects with Azure partners for solutions and support.
+
+**Note:** The specific items and their organization might vary depending on the Azure subscription and services being used.
 
 ### 2. Create Databricks Workspace in Azure
 
