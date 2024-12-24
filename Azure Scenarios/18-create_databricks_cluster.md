@@ -57,7 +57,7 @@ Azure Databricks provides a robust platform for modern analytics and AI workload
 ### Databricks in Microsoft Azure
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks2.png" alt="KMeans Algorithm" width="600"/>
+    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks2.png" alt="KMeans Algorithm" width="1200"/>
 </div>
 
 **General Azure Items:**
