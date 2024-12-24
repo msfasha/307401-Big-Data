@@ -12,7 +12,7 @@
 #### **Key Features of Azure Databricks**
 
 <div style="text-align: center;">
-    <img src="https://raw.githubusercontent.com/msfasha/307304-Data-Mining/main/images/kmeans-1.png" alt="KMeans Algorithm" width="600"/>
+    <img src="https://raw.githubusercontent.com/msfasha/307401-Big-Data/main/Azure%20Scenarios/images/databricks.png" alt="KMeans Algorithm" width="600"/>
 </div>
 
 a. **Unified Analytics Platform**:  
