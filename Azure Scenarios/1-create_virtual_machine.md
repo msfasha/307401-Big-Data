@@ -1,4 +1,4 @@
-### **Scenario: Create A vm AND Host a Web Page Using Windows and IIS**
+### **Scenario: Create a VM and Host a Web Page Using Windows and IIS**
 
 ---
 
