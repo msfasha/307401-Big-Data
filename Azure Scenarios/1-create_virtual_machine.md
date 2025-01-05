@@ -148,5 +148,29 @@ In this scenario we will:
 - Host a basic static website in a cloud environment.
 
 ---
+Below is a summary table for reference, categorizing the major vCPU families by their purpose and specifications.
 
-This **Windows and IIS** version is simple yet powerful, giving students hands-on experience with a commonly used web hosting setup in the industry. Let me know if you'd like to expand this scenario!
+| **VM Family**       | **Purpose**                          | **vCPU-to-Memory Ratio** | **Typical Use Cases**                            | **Key Features**                     |
+|----------------------|--------------------------------------|--------------------------|-------------------------------------------------|---------------------------------------|
+| **A-Series**         | Entry-level workloads               | General-purpose          | Development/testing, low-traffic web servers   | Cost-effective, basic configuration   |
+| **D-Series**         | General-purpose                     | 4 GB/vCPU                | Databases, web apps, medium-traffic servers    | Balanced CPU-to-memory ratio          |
+| **DS-Series**        | General-purpose with SSD storage    | 4 GB/vCPU                | Applications requiring fast storage access     | Premium SSD support                   |
+| **Dv2/Dv3-Series**   | Enhanced general-purpose            | 4 GB/vCPU                | Scalable web apps, enterprise apps             | Faster CPU, optimized for performance |
+| **E-Series**         | Memory-optimized                    | Up to 16 GB/vCPU         | In-memory analytics, SAP HANA                  | Higher memory-to-CPU ratio            |
+| **M-Series**         | Memory-intensive                    | Up to 4 TB/vCPU          | Large databases, SAP HANA, big data workloads  | Extreme memory support                |
+| **F-Series**         | Compute-optimized                   | 2 GB/vCPU                | Batch processing, analytics, gaming servers    | High CPU performance                  |
+| **L-Series**         | Storage-optimized                   | Varies                   | Big data, NoSQL databases, data warehousing    | High disk throughput                  |
+| **N-Series**         | GPU-accelerated                     | Varies                   | AI/ML training, graphics rendering, visualization | Includes GPUs for heavy compute       |
+| **H-Series**         | High-performance compute            | Varies                   | Molecular modeling, simulations, analytics     | Optimized for HPC workloads           |
+
+---
+
+### Key Points to Remember:
+- **General-Purpose VMs (A, D-Series)**: Offer a balance of compute, memory, and storage for a variety of workloads.
+- **Compute-Optimized VMs (F-Series)**: Provide the highest CPU performance per unit of cost.
+- **Memory-Optimized VMs (E, M-Series)**: Focus on memory-heavy workloads with applications like SAP HANA or analytics.
+- **Storage-Optimized VMs (L-Series)**: For data-intensive applications with high disk throughput requirements.
+- **GPU-Optimized VMs (N-Series)**: Feature NVIDIA GPUs for advanced compute tasks.
+- **HPC VMs (H-Series)**: Targeted at workloads requiring extreme compute performance.
+
+---
