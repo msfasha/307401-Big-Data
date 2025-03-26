@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Fetch all history for git diff
+          fetch-depth: 0  # Ensures full git history is available for diff
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,29 +27,26 @@ jobs:
           sudo apt-get install -y texlive-xetex pandoc
 
       - name: Get modified notebooks
-        id: notebooks
+        id: get_notebooks
         run: |
           git fetch origin main
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '.ipynb$' || true)
-          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" > changed_files.txt
+          cat changed_files.txt
 
       - name: Convert notebooks to PDF into /pdfs/
-        if: steps.notebooks.outputs.changed_files != ''
         run: |
           mkdir -p pdfs
-          IFS=$'\n'
-          for file in ${{ steps.notebooks.outputs.changed_files }}; do
-            echo "Converting $file to PDF"
-            output_dir="pdfs/$(dirname "$file")"
-            mkdir -p "$output_dir"
-            jupyter nbconvert --to pdf "$file" --output-dir "$output_dir"
-          done
-          unset IFS
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              echo "Converting $file to PDF"
+              output_dir="pdfs/$(dirname "$file")"
+              mkdir -p "$output_dir"
+              jupyter nbconvert --to pdf "$file" --output-dir "$output_dir"
+            fi
+          done < changed_files.txt
 
       - name: Upload PDFs as artifact
-        if: steps.notebooks.outputs.changed_files != ''
         uses: actions/upload-artifact@v4
         with:
           name: notebook-pdfs
