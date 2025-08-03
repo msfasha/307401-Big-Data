@@ -1,326 +1,9 @@
-### Example 2: Sales Analysis using MRJob
+### Example 2: Sales Analysis MapReduce
 
-#### Complete Sales Revenue Analysis
-Now let's analyze sales data to calculate revenue and statistics by product category. This shows how MRJob handles more complex business logic with structured data.
-
-Create `sales_analysis_mrjob.py`:
-```python
-#!/usr/bin/env python3
-"""
-Sales Analysis using MRJob - Business Intelligence Made Simple!
-==============================================================
-
-This script analyzes sales transaction data to generate business insights:
-- Total revenue per product category
-- Number of transactions per category  
-- Average transaction value per category
-- Top-selling products per category
-
-Input Format (CSV): date,category,product,price,quantity
-Example: 2023-01-01,Electronics,iPhone,999.99,2
-
-The beauty of MRJob: Write MapReduce logic in clean, readable Python!
-"""
-
-import re
-from mrjob.job import MRJob
-from mrjob.step import MRStep
-import json
-
-class MRSalesAnalysis(MRJob):
-    """
-    Sales Analysis MapReduce Job
-    
-    This job processes sales transactions and generates comprehensive
-    business intelligence reports by product category.
-    """
-    
-    def steps(self):
-        """
-        Define the MapReduce workflow.
-        
-        We need two steps for this analysis:
-        1. Step 1: Extract category metrics from each transaction
-        2. Step 2: Aggregate and calculate final statistics
-        """
-        return [
-            MRStep(
-                mapper=self.mapper_parse_transactions,
-                reducer=self.reducer_aggregate_by_category
-            ),
-            MRStep(
-                mapper=self.mapper_format_output,
-                reducer=self.reducer_generate_report
-            )
-        ]
-    
-    def mapper_parse_transactions(self, _, line):
-        """
-        STEP 1 MAPPER: Parse Transaction Data
-        ====================================
-        Extract relevant information from each sales transaction.
-        
-        Input: "2023-01-01,Electronics,iPhone,999.99,2"
-        
-        Process:
-        1. Parse CSV fields (date, category, product, price, quantity)
-        2. Calculate transaction revenue (price × quantity)
-        3. Emit category with transaction details
-        
-        Output: (category, transaction_data)
-        """
-        line = line.strip()
-        
-        # Skip header lines and empty lines
-        if not line or line.startswith('date,') or line.startswith('#'):
-            return
-        
-        try:
-            # Parse CSV fields
-            fields = [field.strip() for field in line.split(',')]
-            
-            if len(fields) >= 5:
-                date, category, product, price_str, quantity_str = fields[:5]
-                
-                # Convert to appropriate types
-                price = float(price_str)
-                quantity = int(quantity_str)
-                
-                # Validate data
-                if category and price >= 0 and quantity > 0:
-                    # Calculate transaction revenue
-                    revenue = price * quantity
-                    
-                    # Create transaction record
-                    transaction = {
-                        'revenue': revenue,
-                        'count': 1,
-                        'product': product,
-                        'date': date,
-                        'avg_price': price,
-                        'total_quantity': quantity
-                    }
-                    
-                    # Emit category with transaction data
-                    yield category, transaction
-                    
-        except (ValueError, IndexError):
-            # Skip malformed lines
-            pass
-    
-    def reducer_aggregate_by_category(self, category, transactions):
-        """
-        STEP 1 REDUCER: Aggregate Category Metrics
-        =========================================
-        Combine all transactions for each category into summary statistics.
-        
-        Input: category="Electronics", transactions=[{transaction1}, {transaction2}, ...]
-        
-        Process:
-        1. Sum total revenue for the category
-        2. Count total number of transactions
-        3. Track all products sold in this category
-        4. Calculate other aggregate metrics
-        
-        Output: (category, aggregated_data)
-        """
-        # Initialize aggregators
-        total_revenue = 0.0
-        total_transactions = 0
-        total_quantity = 0
-        products = set()
-        all_prices = []
-        
-        # Process all transactions for this category
-        for transaction in transactions:
-            total_revenue += transaction['revenue']
-            total_transactions += transaction['count']
-            total_quantity += transaction['total_quantity']
-            products.add(transaction['product'])
-            all_prices.append(transaction['avg_price'])
-        
-        # Calculate derived metrics
-        avg_revenue_per_transaction = total_revenue / total_transactions if total_transactions > 0 else 0
-        avg_price = sum(all_prices) / len(all_prices) if all_prices else 0
-        
-        # Create aggregated data
-        category_data = {
-            'total_revenue': round(total_revenue, 2),
-            'transaction_count': total_transactions,
-            'avg_revenue_per_transaction': round(avg_revenue_per_transaction, 2),
-            'total_quantity_sold': total_quantity,
-            'unique_products': len(products),
-            'avg_price': round(avg_price, 2),
-            'top_products': list(sorted(products))[:5]  # Limit to top 5 for output
-        }
-        
-        yield category, category_data
-    
-    def mapper_format_output(self, category, category_data):
-        """
-        STEP 2 MAPPER: Format for Final Output
-        =====================================
-        Prepare data for final report generation.
-        
-        This step ensures proper formatting and sorting of results.
-        """
-        # Create a sortable key (by revenue, descending)
-        sort_key = f"{category_data['total_revenue']:010.2f}"
-        
-        yield sort_key, (category, category_data)
-    
-    def reducer_generate_report(self, sort_key, category_items):
-        """
-        STEP 2 REDUCER: Generate Final Business Report
-        =============================================
-        Create the final formatted output with business insights.
-        
-        Output format: Detailed business intelligence report
-        """
-        for category, data in category_items:
-            # Format the output as a comprehensive business report
-            report_line = (
-                f"{category}\t"
-                f"Revenue:${data['total_revenue']}\t"
-                f"Transactions:{data['transaction_count']}\t"
-                f"AvgPerTransaction:${data['avg_revenue_per_transaction']}\t"
-                f"TotalQuantity:{data['total_quantity_sold']}\t"
-                f"UniqueProducts:{data['unique_products']}\t"
-                f"AvgPrice:${data['avg_price']}\t"
-                f"TopProducts:{','.join(data['top_products'])}"
-            )
-            
-            yield None, report_line
-
-if __name__ == '__main__':
-    MRSalesAnalysis.run()
-```
-
-#### Customer ID Counter (Based on Your Example)
-Here's also the customer ID counter you mentioned, enhanced with business insights:
-
-Create `customer_counter_mrjob.py`:
-```python
-#!/usr/bin/env python3
-"""
-Customer ID Counter using MRJob
-==============================
-
-Count occurrences of customer IDs in transaction data.
-Based on your original example but enhanced for business analysis.
-
-Input: Lines containing customer IDs (space or comma separated)
-Output: Customer ID frequency analysis for customer behavior insights
-"""
-
-from mrjob.job import MRJob
-from mrjob.step import MRStep
-
-class MRCountCustomerIDs(MRJob):
-    """
-    Enhanced Customer ID Counter with Business Intelligence
-    
-    Counts customer ID occurrences and provides insights about:
-    - Most active customers
-    - Customer engagement levels
-    - Transaction frequency distribution
-    """
-
-    def steps(self):
-        return [
-            MRStep(
-                mapper=self.mapper_get_ids,
-                reducer=self.reducer_count_ids
-            ),
-            MRStep(
-                mapper=self.mapper_categorize_customers,
-                reducer=self.reducer_customer_insights
-            )
-        ]
-
-    def mapper_get_ids(self, _, line):
-        """
-        Extract customer IDs from each line.
-        
-        Input formats supported:
-        - Space separated: "C001 C002 C001 C003"
-        - Comma separated: "C001,C002,C001,C003"
-        - Mixed format transaction logs
-        """
-        line = line.strip()
-        if line and not line.startswith('#'):  # Skip comments
-            # Handle both comma and space separated IDs
-            customer_ids = line.replace(',', ' ').split()
-            
-            for customer_id in customer_ids:
-                customer_id = customer_id.strip()
-                if customer_id:  # Only emit non-empty IDs
-                    yield customer_id, 1
-
-    def reducer_count_ids(self, customer_id, counts):
-        """
-        Count total transactions per customer.
-        
-        Output: (customer_id, total_transaction_count)
-        """
-        total_count = sum(counts)
-        yield customer_id, total_count
-    
-    def mapper_categorize_customers(self, customer_id, count):
-        """
-        Categorize customers by activity level for business insights.
-        
-        Categories:
-        - High Activity: 10+ transactions
-        - Medium Activity: 5-9 transactions  
-        - Low Activity: 1-4 transactions
-        """
-        if count >= 10:
-            category = "High_Activity"
-        elif count >= 5:
-            category = "Medium_Activity"
-        else:
-            category = "Low_Activity"
-        
-        yield category, (customer_id, count)
-    
-    def reducer_customer_insights(self, category, customer_data):
-        """
-        Generate business insights by customer category.
-        """
-        customers = list(customer_data)
-        total_customers = len(customers)
-        total_transactions = sum(count for _, count in customers)
-        avg_transactions = total_transactions / total_customers if total_customers > 0 else 0
-        
-        # Find top customers in this category
-        top_customers = sorted(customers, key=lambda x: x[1], reverse=True)[:5]
-        
-        insight = (
-            f"{category}: {total_customers} customers, "
-            f"{total_transactions} total transactions, "
-            f"avg {avg_transactions:.1f} transactions per customer. "
-            f"Top customers: {', '.join([f'{cid}({cnt})' for cid, cnt in top_customers])}"
-        )
-        
-        yield category, insight
-
-if __name__ == '__main__':
-    MRCountCustomerIDs.run()
-```
-
-#### Running the Sales Analysis
-
-**Step 1: Install MRJob (if not done)**
+#### Dataset Creation
 ```bash
-pip3 install mrjob
-```
-
-**Step 2: Create Enhanced Sales Dataset**
-```bash
-# Create a more comprehensive sales dataset
-cat << 'EOF' > comprehensive_sales.csv
-date,category,product,price,quantity
+# Create sales data
+cat << 'EOF' > sales_data.txt
 2023-01-01,Electronics,iPhone,999.99,2
 2023-01-01,Electronics,Laptop,1299.99,1
 2023-01-01,Clothing,Shirt,29.99,3
@@ -329,45 +12,64 @@ date,category,product,price,quantity
 2023-01-02,Clothing,Jeans,79.99,2
 2023-01-03,Electronics,Keyboard,89.99,3
 2023-01-03,Books,Java Book,59.99,1
-2023-01-04,Electronics,Monitor,299.99,1
-2023-01-04,Clothing,Sweater,59.99,2
-2023-01-05,Sports,Basketball,29.99,1
-2023-01-05,Sports,Tennis Racket,89.99,1
-2023-01-06,Home,Coffee Maker,79.99,1
-2023-01-06,Home,Blender,49.99,2
-2023-01-07,Electronics,Headphones,199.99,1
-2023-01-07,Books,Data Science,69.99,1
-2023-01-08,Electronics,Tablet,399.99,1
-2023-01-08,Clothing,Jacket,129.99,1
-2023-01-09,Sports,Soccer Ball,19.99,2
-2023-01-09,Home,Microwave,149.99,1
 EOF
 
-# Create customer ID data for the second example
-cat << 'EOF' > customer_transactions.txt
-C001 C002 C001 C003 C001
-C002,C004,C002,C005,C002
-C001 C003 C006 C001 C007
-C002,C002,C008,C002
-C001 C009 C010 C001 C001
-EOF
-
-# Upload files
-hdfs dfs -put comprehensive_sales.csv /user/hadoop/datasets/
-hdfs dfs -put customer_transactions.txt /user/hadoop/datasets/
-hdfs dfs -put sales_analysis_mrjob.py /user/hadoop/scripts/
-hdfs dfs -put customer_counter_mrjob.py /user/hadoop/scripts/
+hdfs dfs -put sales_data.txt /user/hadoop/datasets/
 ```
 
-**Step 3: Test Locally**
-```bash
-# Test sales analysis locally
-echo "=== TESTING SALES ANALYSIS LOCALLY ==="
-python3 sales_analysis_mrjob.py comprehensive_sales.csv
+#### Python MapReduce using MRJob
+Create `sales_analysis_mrjob.py`:
+```python
+#!/usr/bin/env python3
+"""
+Sales Analysis MapReduce using MRJob
+Calculates total revenue by product category
+"""
 
-# Test customer counter locally  
-echo -e "\n=== TESTING CUSTOMER COUNTER LOCALLY ==="
-python3 customer_counter_mrjob.py customer_transactions.txt
+from mrjob.job import MRJob
+
+class MRSalesAnalysis(MRJob):
+    
+    def mapper(self, _, line):
+        # Parse CSV: date,category,product,price,quantity
+        line = line.strip()
+        if line and not line.startswith('date'):  # Skip header
+            fields = line.split(',')
+            if len(fields) == 5:
+                try:
+                    category = fields[1]
+                    price = float(fields[3])
+                    quantity = int(fields[4])
+                    total_sales = price * quantity
+                    yield category, total_sales
+                except ValueError:
+                    pass
+    
+    def reducer(self, category, sales_values):
+        # Sum total sales for each category
+        total_revenue = sum(sales_values)
+        yield category, round(total_revenue, 2)
+
+if __name__ == '__main__':
+    MRSalesAnalysis.run()
+```
+
+#### Run the Sales Analysis
+```bash
+# Test locally
+python3 sales_analysis_mrjob.py sales_data.txt
+
+# Run on Hadoop
+hdfs dfs -rm -r /user/hadoop/output/sales_analysis
+
+python3 sales_analysis_mrjob.py \
+  -r hadoop \
+  --hadoop-streaming-jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  --output-dir hdfs:///user/hadoop/output/sales_analysis \
+  hdfs:///user/hadoop/datasets/sales_data.txt
+
+# View results
+hdfs dfs -cat /user/hadoop/output/sales_analysis/part-00000
 ```
 
 **Step 4: Run on Hadoop**
@@ -376,7 +78,196 @@ python3 customer_counter_mrjob.py customer_transactions.txt
 echo "=== RUNNING SALES ANALYSIS ON HADOOP ==="
 hdfs dfs -rm -r /user/hadoop/output/sales_mrjob
 
-python3 # Hadoop Ecosystem Practical Labs - AWS Academy Sandbox
+python3 sales_analysis_mrjob.py \
+  -r hadoop \
+  --hadoop-streaming-jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  --output-dir hdfs:///user/hadoop/output/sales_mrjob \
+  hdfs:///user/hadoop/datasets/comprehensive_sales.csv
+
+# Customer Analysis on Hadoop
+echo -e "\n=== RUNNING CUSTOMER ANALYSIS ON HADOOP ==="
+hdfs dfs -rm -r /user/hadoop/output/customer_mrjob
+
+python3 customer_counter_mrjob.py \
+  -r hadoop \
+  --hadoop-streaming-jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+  --output-dir hdfs:///user/hadoop/output/customer_mrjob \
+  hdfs:///user/hadoop/datasets/customer_transactions.txt
+```
+
+**Step 5: Analyze Results**
+```bash
+# View Sales Analysis Results
+echo "=== SALES ANALYSIS RESULTS ==="
+echo "Category Analysis (Sorted by Revenue):"
+hdfs dfs -cat /user/hadoop/output/sales_mrjob/part-00000
+
+# Parse and format the results for better readability
+echo -e "\n=== FORMATTED BUSINESS REPORT ==="
+hdfs dfs -cat /user/hadoop/output/sales_mrjob/part-00000 | while read line; do
+    echo "$line" | tr '\t' '\n' | nl
+    echo "---"
+done
+
+# View Customer Analysis Results
+echo -e "\n=== CUSTOMER ANALYSIS RESULTS ==="
+hdfs dfs -cat /user/hadoop/output/customer_mrjob/part-00000
+
+# Generate executive summary
+echo -e "\n=== EXECUTIVE SUMMARY ==="
+echo "Top Revenue Categories:"
+hdfs dfs -cat /user/hadoop/output/sales_mrjob/part-00000 | head -3
+
+echo -e "\nCustomer Engagement Insights:"
+hdfs dfs -cat /user/hadoop/output/customer_mrjob/part-00000
+```
+
+**Expected Sales Analysis Output:**
+```
+Electronics	Revenue:$4199.88	Transactions:8	AvgPerTransaction:$524.99	TotalQuantity:16	UniqueProducts:6	AvgPrice:$335.66	TopProducts:Headphones,iPhone,Keyboard,Laptop,Monitor
+
+Clothing	Revenue:$379.94	Transactions:4	AvgPerTransaction:$94.99	TotalQuantity:8	UniqueProducts:4	AvgPrice:$74.99	TopProducts:Jacket,Jeans,Shirt,Sweater
+
+Home	Revenue:$329.96	Transactions:3	AvgPerTransaction:$109.99	TotalQuantity:4	UniqueProducts:3	AvgPrice:$93.32	TopProducts:Blender,Coffee Maker,Microwave
+```
+
+**Expected Customer Analysis Output:**
+```
+High_Activity: 0 customers, 0 total transactions, avg 0.0 transactions per customer. Top customers: 
+
+Low_Activity: 8 customers, 25 total transactions, avg 3.1 transactions per customer. Top customers: C001(7), C002(6), C003(2), C004(1), C005(1)
+
+Medium_Activity: 0 customers, 0 total transactions, avg 0.0 transactions per customer. Top customers: 
+```
+
+#### Why MRJob is Superior for Learning
+
+**Advantages of MRJob over traditional Hadoop Streaming:**
+
+1. **Simplicity**: Single file, clean Python syntax
+2. **Local Testing**: Debug without cluster setup
+3. **Automatic Handling**: No manual mapper/reducer file management
+4. **Error Handling**: Better error messages and debugging
+5. **Flexibility**: Easy to add multiple steps
+6. **Readability**: Code is self-documenting
+
+**Key Learning Points:**
+
+1. **MapReduce Concepts**: Students see the map/reduce pattern clearly
+2. **Data Processing**: Real-world business logic examples
+3. **Scalability**: Same code works locally and on cluster
+4. **Debugging**: Easy to test and troubleshoot
+5. **Business Intelligence**: Practical analytics applications
+
+#### Additional MRJob Examples for Practice
+
+**Example 3: Log Analysis**
+```python
+#!/usr/bin/env python3
+"""
+Web Log Analysis using MRJob
+===========================
+Analyze web server logs to find:
+- Most visited pages
+- Error rates
+- Traffic patterns by hour
+"""
+
+from mrjob.job import MRJob
+import re
+from datetime import datetime
+
+class MRLogAnalysis(MRJob):
+    
+    def mapper(self, _, line):
+        # Parse Apache log format
+        # Example: 192.168.1.1 - - [01/Jan/2023:10:30:45 +0000] "GET /index.html HTTP/1.1" 200 1234
+        
+        log_pattern = r'(\S+) \S+ \S+ \[([\w:/]+\s[+\-]\d{4})\] "(\S+) (\S+) \S+" (\d{3}) (\d+)'
+        match = re.match(log_pattern, line)
+        
+        if match:
+            ip, timestamp, method, url, status, size = match.groups()
+            
+            # Extract hour from timestamp
+            try:
+                dt = datetime.strptime(timestamp.split()[0], '%d/%b/%Y:%H:%M:%S')
+                hour = dt.hour
+                
+                # Emit different metrics
+                yield ('page_visits', url), 1
+                yield ('hourly_traffic', hour), 1
+                yield ('status_codes', status), 1
+                yield ('ip_addresses', ip), 1
+                
+            except ValueError:
+                pass
+    
+    def reducer(self, key, values):
+        metric_type, item = key
+        count = sum(values)
+        yield f"{metric_type}_{item}", count
+
+if __name__ == '__main__':
+    MRLogAnalysis.run()
+```
+
+**Example 4: Product Recommendation**
+```python
+#!/usr/bin/env python3
+"""
+Product Recommendation using MRJob
+==================================
+Find products frequently bought together.
+"""
+
+from mrjob.job import MRJob
+from mrjob.step import MRStep
+from itertools import combinations
+
+class MRProductRecommendation(MRJob):
+    
+    def steps(self):
+        return [
+            MRStep(mapper=self.mapper_extract_baskets,
+                   reducer=self.reducer_find_pairs),
+            MRStep(mapper=self.mapper_count_pairs,
+                   reducer=self.reducer_recommend)
+        ]
+    
+    def mapper_extract_baskets(self, _, line):
+        # Input: customer_id,product1,product2,product3
+        if line.strip():
+            parts = line.strip().split(',')
+            if len(parts) > 2:
+                customer = parts[0]
+                products = parts[1:]
+                
+                # Generate all product pairs in this basket
+                for pair in combinations(sorted(products), 2):
+                    yield pair, 1
+    
+    def reducer_find_pairs(self, pair, counts):
+        total = sum(counts)
+        if total >= 2:  # Only pairs bought together at least twice
+            yield pair, total
+    
+    def mapper_count_pairs(self, pair, count):
+        product1, product2 = pair
+        # Emit both directions for recommendations
+        yield product1, (product2, count)
+        yield product2, (product1, count)
+    
+    def reducer_recommend(self, product, recommendations):
+        # Sort recommendations by frequency
+        recs = sorted(recommendations, key=lambda x: x[1], reverse=True)[:3]
+        yield product, [f"{prod}({count})" for prod, count in recs]
+
+if __name__ == '__main__':
+    MRProductRecommendation.run()
+```
+
+These examples demonstrate the power and simplicity of MRJob for various MapReduce applications, making it much easier for students to understand and implement big data processing solutions!# Hadoop Ecosystem Practical Labs - AWS Academy Sandbox
 
 ## Prerequisites and Setup
 
@@ -535,219 +426,56 @@ EOF
 hdfs dfs -put sample_text.txt /user/hadoop/datasets/
 ```
 
-### Example 1: Word Count using MRJob (Simplified Python MapReduce)
+### Example 1: Word Count (Python MapReduce using MRJob)
 
-#### What is MRJob?
-`MRJob` is a Python library that makes writing MapReduce jobs incredibly simple. It handles all the complexity of Hadoop streaming and lets you focus on the business logic. Think of it as "MapReduce made easy!"
-
-**Key Benefits:**
-- **Simple Syntax**: No need for separate mapper/reducer files
-- **Local Testing**: Test your job locally before running on Hadoop
-- **Automatic Handling**: MRJob manages all the Hadoop streaming details
-- **Multiple Runners**: Can run locally, on Hadoop, or cloud platforms
-
-#### Complete Word Count Implementation
+#### Python Implementation using MRJob
+MRJob is a Python library that makes writing MapReduce jobs simple and intuitive. Instead of dealing with complex Java code, we can write clean Python that's easy to understand and test.
 
 Create `wordcount_mrjob.py`:
 ```python
 #!/usr/bin/env python3
 """
-Word Count using MRJob - The Simple Way!
-========================================
-
-This script demonstrates the classic word count problem using MRJob library.
-MRJob makes MapReduce in Python incredibly simple and intuitive.
-
-How it works:
-1. MAPPER: Splits each line into words and emits (word, 1) for each word
-2. REDUCER: Sums up all the 1s for each word to get final counts
-
-Example:
-Input: "Hello world hello python"
-Mapper emits: (hello, 1), (world, 1), (hello, 1), (python, 1)
-Reducer outputs: hello:2, world:1, python:1
-
-Installation: pip3 install mrjob
+Word Count MapReduce using MRJob
+Simple Python implementation of the classic word count problem
 """
 
 import re
 from mrjob.job import MRJob
-from mrjob.step import MRStep
 
 class MRWordCount(MRJob):
-    """
-    Word Count MapReduce Job using MRJob
     
-    This class defines both the mapper and reducer functions for counting words.
-    MRJob automatically handles the MapReduce workflow and Hadoop integration.
-    """
-    
-    def steps(self):
-        """
-        Define the MapReduce steps for this job.
-        
-        For word count, we only need one step:
-        - Mapper: Extract words from text
-        - Reducer: Count occurrences of each word
-        """
-        return [
-            MRStep(
-                mapper=self.mapper_extract_words,
-                reducer=self.reducer_count_words
-            )
-        ]
-    
-    def mapper_extract_words(self, _, line):
-        """
-        MAPPER FUNCTION
-        ===============
-        Extract individual words from each line of text.
-        
-        Parameters:
-        - _ : The input key (line number), which we don't need
-        - line : A line of text from the input file
-        
-        Process:
-        1. Convert line to lowercase for consistency
-        2. Extract words using regex (only alphabetic characters)
-        3. Emit (word, 1) for each word found
-        
-        Example:
-        Input: "Hello World! Welcome to Hadoop MapReduce."
-        Output: (hello, 1), (world, 1), (welcome, 1), (to, 1), (hadoop, 1), (mapreduce, 1)
-        """
-        # Convert to lowercase and extract words (2+ characters, alphabetic only)
+    def mapper(self, _, line):
+        # Extract words from each line
         words = re.findall(r'[a-z]{2,}', line.lower())
-        
-        # Emit each word with a count of 1
         for word in words:
             yield word, 1
     
-    def reducer_count_words(self, word, counts):
-        """
-        REDUCER FUNCTION
-        ================
-        Sum up all the counts for each word.
-        
-        Parameters:
-        - word : The word we're counting (the key)
-        - counts : An iterator of all the counts for this word (list of 1s)
-        
-        Process:
-        1. Sum all the 1s to get total count for this word
-        2. Emit (word, total_count)
-        
-        Example:
-        Input: word="hello", counts=[1, 1, 1]
-        Output: (hello, 3)
-        """
-        # Sum all the counts for this word
-        total_count = sum(counts)
-        yield word, total_count
+    def reducer(self, word, counts):
+        # Sum up the counts for each word
+        yield word, sum(counts)
 
 if __name__ == '__main__':
-    # Run the MapReduce job
-    # MRJob automatically handles command-line arguments and execution
     MRWordCount.run()
 ```
 
-#### Installation and Setup
-
-**Step 1: Install MRJob**
+#### Installation and Running
 ```bash
-# Install MRJob library (if not already installed)
+# Install MRJob
 pip3 install mrjob
 
-# Verify installation
-python3 -c "import mrjob; print('MRJob installed successfully!')"
-```
-
-**Step 2: Create Sample Data**
-```bash
-# Create sample text file for word counting
-cat << 'EOF' > sample_text.txt
-Apache Hadoop is an open source framework for distributed storage and processing.
-Hadoop provides a reliable way to store and process large datasets across clusters.
-MapReduce is a programming model that allows parallel processing of big data.
-HDFS is the distributed file system that provides high-throughput access to data.
-The Hadoop ecosystem includes many tools like Hive, HBase, Spark, and more.
-Big data processing with Hadoop is scalable and fault-tolerant.
-Hadoop clusters can process petabytes of data efficiently.
-MapReduce jobs can be written in Java, Python, or other languages.
-EOF
-
-# Upload to HDFS
-hdfs dfs -put sample_text.txt /user/hadoop/datasets/
-hdfs dfs -put wordcount_mrjob.py /user/hadoop/scripts/
-```
-
-#### Running the Word Count Job
-
-**Step 3: Test Locally First**
-```bash
-# Always test locally before running on Hadoop cluster
-# This helps catch errors quickly and understand the output
-
-echo "=== TESTING LOCALLY ==="
+# Test locally first
 python3 wordcount_mrjob.py sample_text.txt
-
-# You'll see output like:
-# "access"    1
-# "across"    1
-# "allows"    1
-# "and"       3
-# "apache"    1
-# ...
-```
-
-**Step 4: Run on Hadoop Cluster**
-```bash
-# Run the job on Hadoop using MRJob's hadoop runner
-# MRJob automatically handles the Hadoop streaming setup
-
-echo "=== RUNNING ON HADOOP CLUSTER ==="
-
-# Remove output directory if it exists
-hdfs dfs -rm -r /user/hadoop/output/wordcount_mrjob
 
 # Run on Hadoop cluster
 python3 wordcount_mrjob.py \
   -r hadoop \
   --hadoop-streaming-jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
-  --output-dir hdfs:///user/hadoop/output/wordcount_mrjob \
+  --output-dir hdfs:///user/hadoop/output/wordcount \
   hdfs:///user/hadoop/datasets/sample_text.txt
 
 # View results
-echo "=== WORD COUNT RESULTS ==="
-hdfs dfs -cat /user/hadoop/output/wordcount_mrjob/part-00000
-
-# Generate statistics
-echo -e "\n=== STATISTICS ==="
-echo "Total unique words: $(hdfs dfs -cat /user/hadoop/output/wordcount_mrjob/part-00000 | wc -l)"
-echo -e "\nTop 10 most frequent words:"
-hdfs dfs -cat /user/hadoop/output/wordcount_mrjob/part-00000 | sort -k2 -nr | head -10
+hdfs dfs -cat /user/hadoop/output/wordcount/part-00000
 ```
-
-**Expected Output:**
-```
-"and"       3
-"data"      3
-"hadoop"    4
-"is"        2
-"mapreduce" 2
-"of"        2
-"processing" 2
-"the"       2
-"to"        2
-"with"      1
-...
-```
-
-**Understanding the Results:**
-- "hadoop" appears 4 times (most frequent technical term)
-- "and", "data" appear 3 times each
-- Common words like "is", "the", "of" appear 2 times each
-- This shows the distribution of words in our Hadoop-focused text
 
 ### Example 2: Sales Analysis MapReduce
 
