@@ -1,5 +1,14 @@
 ## Lab 1: HDFS Operations
 
+To use labs listed in this document, you can use sandbox enviroment provided in the AWS Data Engineering Course in AWS Academy.
+To initiate the snadbox, we only need to set the roles for the EMR cluster and the core nodes.
+We can even use m4.xlarge machines for running the sandbox.
+
+To run the lbas, we can use command line shell environment.
+We can connect to the cluster through command shell by connecting to the Primary EMR EC2 machine from the EC2 instances console.
+Before that, we need to make sure to add an inbound firewall rule to the Primary node in the firewall and security settings. 
+
+
 ### Learning Objectives
 - Understand HDFS architecture
 - Perform basic file operations
