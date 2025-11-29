@@ -1,0 +1,9 @@
+services:
+  hadoop-python:
+    build: .
+    container_name: hadoop-python
+    hostname: hadoop-python
+    ports:
+      - "9870:9870"   # HDFS NameNode UI
+      - "8088:8088"   # YARN ResourceManager UI
+    tty: true
