@@ -1,7 +1,0 @@
-hello world
-spark is powerful and efficient for big data processing
-hello spark users welcome to the world of distributed computing
-the power of spark allows processing vast amounts of data efficiently
-hello data scientists and engineers, explore the world of spark
-python and spark together enable advanced data processing
-welcome to the powerful world of spark and big data
