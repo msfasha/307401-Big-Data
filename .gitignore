@@ -1,4 +1,5 @@
 *.pptx
+*.docx
 **/beta/
 desktop.ini
 
