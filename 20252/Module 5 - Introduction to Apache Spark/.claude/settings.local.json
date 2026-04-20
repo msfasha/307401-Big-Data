@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(\"/tmp/spark_module_overview.txt\":*)",
+      "Read(//tmp/**)",
+      "Bash(printf '%s\\\\n' ':*)",
+      "Read(//c/Users/me/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/becc78f9-331f-43d6-8639-52162d830324/e4884406-7554-4054-aa26-6886a1e3ea30/skills/pdf/**)",
+      "Bash(pip install:*)",
+      "Bash(python -c \":*)",
+      "Bash(ls \"D:/win11-vm/OneDrive/Active/github/307401-Big-Data/20252/Module 5 - Introduction to Spark/\"*.pptx)",
+      "Bash(python -c \"import pptx; print\\(pptx.__version__\\)\")",
+      "Bash(pip3 install:*)",
+      "Read(//usr/**)",
+      "Read(//usr/local/**)",
+      "Bash(/c/WINDOWS/py -c \"import pptx; print\\(pptx.__version__\\)\")",
+      "Bash(/c/WINDOWS/py -m pip install python-pptx -q)",
+      "Bash(/c/WINDOWS/py -c \":*)",
+      "Bash(/c/WINDOWS/py build_v2.py)"
+    ]
+  }
+}
